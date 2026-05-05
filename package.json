@@ -1,23 +1,24 @@
 {
-  "name": "noobtrade-mobile-shell",
+  "name": "stock-pattern-dashboard-frontend",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "mobile:build:web": "npm --prefix frontend run build",
-    "mobile:doctor": "node ./scripts/mobile/doctor.mjs",
-    "mobile:add:ios": "node ./scripts/mobile/ensure-ios-shell.mjs",
-    "mobile:sync:ios": "npm run mobile:build:web && npm run mobile:add:ios && npx cap sync ios",
-    "mobile:copy:ios": "npm run mobile:build:web && npx cap copy ios",
-    "mobile:open:ios": "npx cap open ios",
-    "mobile:prepare:ios": "npm run mobile:doctor && npm run mobile:sync:ios",
-    "mobile:run:ios": "npm run mobile:prepare:ios && npx cap run ios"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:e2e": "node ./scripts/prepare-e2e-db.mjs && playwright test",
+    "test:e2e:headed": "node ./scripts/prepare-e2e-db.mjs && playwright test --headed",
+    "test:e2e:mobile": "node ./scripts/prepare-e2e-db.mjs && playwright test --project=mobile-chromium",
+    "test:e2e:live-smoke": "node ./scripts/prepare-e2e-db.mjs && PLAYWRIGHT_LIVE_SMOKE=true playwright test tests/e2e/live-smoke.spec.js --project=chromium"
   },
   "dependencies": {
-    "@capacitor/core": "^7.3.0"
+    "pg": "^8.20.0",
+    "vue": "^3.5.13"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.3.0",
-    "@capacitor/ios": "^7.3.0"
+    "@playwright/test": "^1.58.2",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.2.0"
   }
 }
