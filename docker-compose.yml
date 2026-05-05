@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: noobtrade-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-stock_pattern_project}
+      POSTGRES_USER: ${POSTGRES_USER:-noobtrade}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-noobtrade}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-noobtrade} -d ${POSTGRES_DB:-stock_pattern_project}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: noobtrade-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      FLASK_DEBUG: ${FLASK_DEBUG:-false}
+      HOST: ${HOST:-0.0.0.0}
+      PORT: ${PORT:-5000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://noobtrade:noobtrade@db:5432/stock_pattern_project}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:5000,http://127.0.0.1:5000}
+      USE_MOCK_FALLBACK: ${USE_MOCK_FALLBACK:-true}
+      MARKET_DATA_BASE_URL: ${MARKET_DATA_BASE_URL:-https://marketdata.colab.duke.edu/api/v1}
+      MARKET_DATA_TOKEN: ${MARKET_DATA_TOKEN:-}
+      ALLOW_LOCAL_EMAIL_BYPASS: ${ALLOW_LOCAL_EMAIL_BYPASS:-true}
+      REQUIRE_EMAIL_VERIFICATION: ${REQUIRE_EMAIL_VERIFICATION:-false}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-noobtrade-compose-secret}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_USE_TLS: ${SMTP_USE_TLS:-true}
+      SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
